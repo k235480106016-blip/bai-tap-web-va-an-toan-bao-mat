@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website 1 - Gọi API Node-RED</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .box { background: white; padding: 25px; border-radius: 8px; max-width: 500px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Danh Sách Sinh Viên (Gọi API Node-RED)</h2>
+    <button onclick="loadData()">Tải dữ liệu từ API</button>
+    <p id="status" style="font-weight: bold; color: green;"></p>
+
+    <table id="dataTable" style="display: none;">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên sinh viên</th>
+                <th>Số tiền</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script>
+    async function loadData() {
+        const statusEl = document.getElementById('status');
+        const tableEl = document.getElementById('dataTable');
+        const bodyEl = document.getElementById('tableBody');
+
+        statusEl.innerText = "Đang tải dữ liệu...";
+        bodyEl.innerHTML = "";
+
+        try {
+            // Gọi API thông qua Nginx Reverse Proxy
+            const response = await fetch('/api/tacke');
+            const data = await response.json();
+
+            if (data.ok === 1) {
+                statusEl.innerText = "Trạng thái: " + data.msg;
+                tableEl.style.display = "table";
+
+                data.dssv.forEach((sv, index) => {
+                    const row = `<tr>
+                        <td>${index + 1}</td>
+                        <td>${sv.name}</td>
+                        <td>${sv.money}</td>
+                    </tr>`;
+                    bodyEl.innerHTML += row;
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            statusEl.innerText = "Lỗi khi gọi API!";
+            statusEl.style.color = "red";
+        }
+    }
+</script>
+
+</body>
+</html>
